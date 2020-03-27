@@ -20,15 +20,19 @@ obj.notification_muted = "Muted the microphone"
 obj.notification_live = "Enabled the microphone"
 obj.isMuted = false
 
-function obj:init() 
-    local selfWatchdog = function () self:watchdog() end
+function obj:init()
+    local selfWatchdog = function()
+        self:watchdog()
+    end
 
-    self.timer = hs.timer.new(1, selfWatchdog) 
+    self.timer = hs.timer.new(1, selfWatchdog)
 end
 
 function obj:start()
 
-    local selfToggle = function () self:toggle() end
+    local selfToggle = function()
+        self:toggle()
+    end
 
     self.menuIcon = hs.menubar.new(show_in_menubar)
 
@@ -73,22 +77,26 @@ end
 
 function obj:bindHotkeys(mapping)
 
-    local def = {toggle = function() self:toggle() end}
+    local def = {
+        toggle = function()
+            self:toggle()
+        end
+    }
     hs.spoons.bindHotkeysToSpec(def, mapping)
 end
 
 function obj:watchdog()
 
     if (self.isMuted) then
-    for _, device in pairs(hs.audiodevice.allInputDevices()) do
+        for _, device in pairs(hs.audiodevice.allInputDevices()) do
             if not device:inputMuted() then
                 hs.notify.show("GlobalMute", "", "Someone unmuted the input, resetting")
-            self:setMute(true)
+                self:setMute(true)
 
-            break
+                break
+            end
         end
     end
-end
 end
 
 return obj
