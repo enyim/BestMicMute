@@ -14,7 +14,7 @@ obj.license = ""
 obj.logger = hs.logger.new("GlobalMute")
 
 obj.show_in_menubar = true
-obj.menubar_title_muted = "muted ⚪"
+obj.menubar_title_muted = "muted 🤐"
 obj.menubar_title_live = "live 🔴"
 obj.notification_muted = "Muted the microphone"
 obj.notification_live = "Enabled the microphone"
@@ -30,14 +30,14 @@ end
 
 function obj:start()
 
-    local selfToggle = function()
-        self:toggle()
-    end
-
     self.menuIcon = hs.menubar.new(show_in_menubar)
+    self.menuIcon:setClickCallback(function()
+        self:toggle()
+    end)
 
-    self.menuIcon:setClickCallback(selfToggle)
-    hs.audiodevice.watcher.setCallback(selfToggle)
+    hs.audiodevice.watcher.setCallback(function()
+        self:setMute(self.isMuted, true)
+    end)
 
     hs.audiodevice.watcher.start()
     self.timer:start()
@@ -60,14 +60,17 @@ function obj:toggle()
     self:setMute(self.isMuted)
 end
 
-function obj:setMute(state)
+function obj:setMute(state, silent)
 
     for _, device in pairs(hs.audiodevice.allInputDevices()) do
         device:setInputMuted(state)
     end
 
-    hs.notify.show("GlobalMute", "", self.isMuted and self.notification_muted or self.notification_live)
     self:updateMenuIcon()
+
+    if silent ~= true then
+        hs.notify.show("GlobalMute", "", self.isMuted and self.notification_muted or self.notification_live)
+    end
 end
 
 function obj:updateMenuIcon()
@@ -91,7 +94,7 @@ function obj:watchdog()
         for _, device in pairs(hs.audiodevice.allInputDevices()) do
             if not device:inputMuted() then
                 hs.notify.show("GlobalMute", "", "Someone unmuted the input, resetting")
-                self:setMute(true)
+                self:setMute(true, true)
 
                 break
             end
